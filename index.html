@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>myfirstapp</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+    crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+    integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+    crossorigin=""></script>
+  <!-- <script type="text/javascript" src="1.geojson"></script> -->
+  <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.1.2/papaparse.js"></script>
+
+  <style>
+    #map {
+      height: 90vh;
+    }
+
+    #datatable {
+    overflow:hidden;
+    overflow-y: scroll;
+    height: 90vh; 
+}
+    table,
+    th,
+    td {
+      border: 1px solid black;
+      border-collapse: collapse;
+      padding: 10px;
+
+    }
+  </style>
+</head>
+
+<body>
+  {% set base = '.' %}
+  {% include template-navbar.html %}
+  <!-- TODO: Filter bars -->
+    <label for="amount">Donation amount ($50 increments):</label>
+  <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+
+  <!--slider-->
+
+  <div class="container-fluid py-4">
+    <div class="row">
+      <div class="col-md-13">
+        <div class="sidebar">
+          <label for="CrimeTypes">Select a Crime type:</label>
+          <select id="CrimeTypes" onchange="drawStuff(this)">
+            <option value="Petit Larcency">Petit Larcency</option>
+            <option value="Grand Larcency">Grand Larcency</option>
+            <option value="Misd. Assault">Misd. Assault</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div id="map"></div>
+      </div>
+      <div class="col-md-6" id="datatable">
+        <script type="text/html" class="datatable">
+          <% var _headers = Object.keys(data[0]) %>
+          <table class="table">
+            <thead>
+              <tr>
+                <% _.each(_headers, function(d){ %>
+                <th><%= d%></th>
+                <% }) %>
+              </tr>
+            </thead>
+            <tbody>
+              <% _.each(data, function(d){ %>
+              <tr>
+                <% _.each(_headers, function(h){ %>
+                <td><%= d[h]%></td>
+                <% })%>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </script>
+      </div>
+    </div><!-- .container-fluid -->
+  </div>
+
+  <script src="ui/jquery/dist/jquery.min.js"></script>
+  <script src="ui/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="ui/lodash/lodash.min.js"></script>
+  <script src="ui/g1/dist/g1.min.js"></script>
+  <script src="ui/d3v5/dist/d3.min.js"></script>
+
+  <!-- Commonly used libraries:
+  <script src="ui/morphdom/dist/morphdom-umd.min.js"></script>
+  <script src="ui/dayjs/dayjs.min.js"></script>
+  <script src="ui/daterangepicker/daterangepicker.js"></script>
+  <script src="ui/leaflet/dist/leaflet.js"></script>
+  <script src="ui/topojson/dist/topojson.min.js"></script>
+  -->
+  <script>
+    //Slider Script
+//     $("ex6").slider();
+//     $("ex6").on("slide", function(slideEvt) {
+// 	  $("#ex6SliderVal").text(slideEvt.value);
+// });
+    var map = L.map('map'); /* The id of the DOM element that will contain the map */
+
+    map.setView([40.703312, -73.97968], 11);
+
+    var baseLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
+      minNativeZoom: 8,
+      maxNativeZoom: 19,
+      subdomains: '1234',
+      bounds: L.latLngBounds([39.3682, -75.9374], [42.0329, -71.7187])
+    });
+    var popup = L.popup();
+
+    map.addLayer(baseLayer);
+
+    function getColor(d) {
+      return d > 50 ? 'orange' :
+        d > 40 ? 'yellow' :
+        d > 30 ? 'green' :
+        d > 20 ? 'pink' :
+        d > 10 ? 'blue' :
+        d > 5 ? 'red' :
+        'orange';
+    }
+
+
+
+    // min & max of crime data
+    // d3.js color them dynamiccally - skip this
+    // construct getcolor dynamically based on min and maz of the crime data
+    // creates bins from crime data
+    function getColor(d) {
+      return d > 50 ? 'orange' :
+        d > 40 ? 'yellow' :
+        d > 30 ? 'green' :
+        d > 20 ? 'pink' :
+        d > 10 ? 'blue' :
+        d > 5 ? 'red' :
+        'orange';
+    }
+
+    function onEachFeature(feature, layer) {
+      // does this feature have a property named popupContent?
+      layer.on({
+        mouseover: function () {
+          if (feature.properties && feature.properties.precinct)
+            layer.bindPopup("<strong> Precinct: </strong>" + feature.properties.precinct +
+              '<br />' + feature.properties.shape_leng + '<br />' + getBorough(feature.properties.precinct));
+        }
+      })
+
+    }
+
+    function getBorough(d) {
+      if (52 >= d && d >= 40)
+        return 'Bronx'
+      if (94 >= d && d >= 60)
+        return 'Brooklyn'
+      if (34 >= d && d >= 1)
+        return 'Manhattan'
+      if (115 > d && d >= 100)
+        return 'Queens'
+      if (123 >= d && d >= 120)
+        return 'Staten Island'
+    }
+
+    function drawStuff(menu) { //drop down menu
+      if (menu.value == 'Petit Larcency') {
+        //do something
+        alert(1)
+      } else if (menu.value == 'Grand Larcency') {
+        //changes map->
+        $.ajax({
+          url: 'one.geojson',
+          dataType: "json",
+          success: function (data) {
+            $.getJSON('TopCrimeYTD'/*input Data FIle we want here*/, function (crimedata) {
+              $('script.datatable').template({
+                data: crimedata
+              })
+              var values = crimedata.map(d => d.top5CrimeByPrecWTD);
+              var ScaleGener = d3.scaleLinear()
+                .domain([d3.min(values), d3.mean(values), d3.max(values)])
+                .range(['green', 'yellow', 'red']);
+              L.geoJson(data, {
+                style: function (feature) {
+                  var p_val = crimedata.filter(d => d.precinct == feature.properties.precinct)
+                  p_val = p_val.length > 0 ? ScaleGener(p_val[0].top5CrimeByPrecYTD) : "#000";
+                  return {
+                    fillColor: p_val,
+                    weight: 2,
+                    opacity: 1,
+                    color: 'white',
+                    fillOpacity: 0.5
+                  };
+                },
+                onEachFeature: onEachFeature
+              }).addTo(map)
+            })
+          },
+        })
+      } else if (menu.value == 'Misd. Assault') {
+        //do something
+        alert(3)
+      }
+    }
+</script>
+  </script>
+
+</body>
+
+</html>

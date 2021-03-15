@@ -1,7 +1,6 @@
 from tornado.web import HTTPError
 from gramex.http import BAD_REQUEST
 import pandas as pd
-import pandas as pd
 import requests
 import re
 from bs4 import BeautifulSoup
@@ -18,12 +17,13 @@ def topCrimeYTD(data, handler): #YearToDate function for each precinct
   thing2=data
   thing2 = thing2[['Crime Type', 'Year to Date 2020', 'precinct']]
   cols = list(thing2['Crime Type'].unique())
-  top5precinctYear = pd.pivot_table(thing2, values='Year to Date 2020', index=['precinct'],columns=['Crime Type'])
+  top5precinctYear = pd.pivot_table(thing2, values='Year to Date 2020', index='precinct',columns='Crime Type')
   unwanted_Cols =['TOTAL']
   top5precinctYear.drop(columns=unwanted_Cols, inplace=True)
-  top5precinctYear['top5CrimeByPrec_YTD'] = top5precinctYear.max(axis=1)
+  top5precinctYear['val'] = top5precinctYear.max(axis=1)
   top5precinctYear['Max'] = top5precinctYear.idxmax(axis=1)
-  top5precinctYear=top5precinctYear[['top5CrimeByPrec_YTD', 'Max']].sort_values(by=['top5CrimeByPrec_YTD'], ascending=False)
+  top5precinctYear=top5precinctYear.reset_index()
+  top5precinctYear=top5precinctYear[['val', 'Max','precinct']].sort_values(by=['val'], ascending=False)
   return top5precinctYear
 
 
@@ -34,9 +34,10 @@ def topCrimeWTD(data, handler):#WeekToDate function for each precinct
   top5precinct = pd.pivot_table(thing1, values='Week to Date 2020', index=['precinct'], columns=['Crime Type'])
   unwanted_Cols =['TOTAL']
   top5precinct.drop(columns=unwanted_Cols, inplace=True)
-  top5precinct['top5CrimeByPrecWTD'] = top5precinct.max(axis=1)
+  top5precinct['val'] = top5precinct.max(axis=1)
   top5precinct['Max'] = top5precinct.idxmax(axis=1)
-  top5precinct=top5precinct[['top5CrimeByPrecWTD', 'Max']].sort_values(by=['top5CrimeByPrecWTD'], ascending=False)
+  top5precinct=top5precinct.reset_index()
+  top5precinct=top5precinct[['val', 'Max','precinct' ]].sort_values(by=['val'], ascending=False)
   return top5precinct
 
 
@@ -47,10 +48,55 @@ def topCrimeMTD(data, handler):#MonthToDate function for each precinct
   top5precinct = pd.pivot_table(thing1, values='28 day 2020', index=['precinct'], columns=['Crime Type'])
   unwanted_Cols =['TOTAL']
   top5precinct.drop(columns=unwanted_Cols, inplace=True)
-  top5precinct['top5CrimeByPrecMTD'] = top5precinct.max(axis=1)
+  top5precinct['val'] = top5precinct.max(axis=1)
   top5precinct['Max'] = top5precinct.idxmax(axis=1)
-  top5precinct=top5precinct[['top5CrimeByPrecMTD', 'Max']].sort_values(by=['top5CrimeByPrecMTD'], ascending=False)
+  top5precinct=top5precinct.reset_index()
+  top5precinct=top5precinct[['val', 'Max','precinct' ]].sort_values(by=['val'], ascending=False)
   return top5precinct
+
+def Crime2YrPerChange(data, handler):#MonthToDate function for each precinct
+  thing3=data
+  thing3 = thing3[['Crime Type', '2Yr %Chg', 'precinct']]
+  thing3=thing3.replace(to_replace ="***.*", value =0.0)
+  thing3['2Yr %Chg'] = thing3['2Yr %Chg'].astype(float) 
+  thing3 = pd.pivot_table(thing3, values='2Yr %Chg', index=['precinct'],columns=['Crime Type'])
+  unwanted_Cols =['TOTAL']
+  thing3.drop(columns=unwanted_Cols, inplace=True)
+  thing3['top5CrimeByPrec_2YRCHG'] = thing3.max(axis=1)
+  thing3['Max'] = thing3.idxmax(axis=1)
+  thing3=thing3.reset_index()
+  thing3=thing3[['top5CrimeByPrec_2YRCHG', 'Max', 'precinct']].sort_values(by=['top5CrimeByPrec_2YRCHG'], ascending=False)
+  return thing3
+
+def Crime10YrPerChange(data, handler):#MonthToDate function for each precinct
+  thing3=data
+  thing3 = thing3[['Crime Type', '10Yr %Chg', 'precinct']]
+  thing3=thing3.replace(to_replace ="***.*", value =0.0)
+  thing3['10Yr %Chg'] = thing3['10Yr %Chg'].astype(float) 
+  thing3 = pd.pivot_table(thing3, values='10Yr %Chg', index=['precinct'],columns=['Crime Type'])
+  unwanted_Cols =['TOTAL']
+  thing3.drop(columns=unwanted_Cols, inplace=True)
+  thing3['top5CrimeByPrec_10YRCHG'] = thing3.max(axis=1)
+  thing3['Max'] = thing3.idxmax(axis=1)
+  thing3=thing3.reset_index()
+  thing3=thing3[['top5CrimeByPrec_10YRCHG', 'Max', 'precinct']].sort_values(by=['top5CrimeByPrec_10YRCHG'], ascending=False)
+  return thing3
+
+
+
+def Crime27YrPerChange(data, handler):#MonthToDate function for each precinct
+  thing3=data
+  thing3 = thing3[['Crime Type', '27Yr %Chg', 'precinct']]
+  thing3=thing3.replace(to_replace ="***.*", value =0.0)
+  thing3['27Yr %Chg'] = thing3['27Yr %Chg'].astype(float) 
+  thing3 = pd.pivot_table(thing3, values='27Yr %Chg', index=['precinct'],columns=['Crime Type'])
+  unwanted_Cols =['TOTAL']
+  thing3.drop(columns=unwanted_Cols, inplace=True)
+  thing3['top5CrimeByPrec_27YRCHG'] = thing3.max(axis=1)
+  thing3['Max'] = thing3.idxmax(axis=1)
+  thing3=thing3.reset_index()
+  thing3=thing3[['top5CrimeByPrec_27YRCHG', 'Max', 'precinct']].sort_values(by=['top5CrimeByPrec_27YRCHG'], ascending=False)
+  return thing3
 
 thisdict = {'40':"Bronx",'41':"Bronx",'42':"Bronx",'43':"Bronx",'44':"Bronx",'45':"Bronx",'46':"Bronx",'47':"Bronx",'48':"Bronx",'49':"Bronx",'50':"Bronx",'52':"Bronx",
   '60':"PB Brooklyn South",'61':"PB Brooklyn South",'62':"PB Brooklyn South",'63':"PB Brooklyn South",'66':"PB Brooklyn South",'67':"PB Brooklyn South",'68':"PB Brooklyn South",'69':"PB Brooklyn South",'70':"PB Brooklyn South",'71':"PB Brooklyn South",'72':"PB Brooklyn South",'76':"PB Brooklyn South",'78':"PB Brooklyn South",

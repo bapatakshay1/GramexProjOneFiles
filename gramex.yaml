@@ -50,6 +50,30 @@ url:
       table: TopCrimes
       modify: myfirstapp.topCrimeMTD(data, handler)
 
+  Crime2YrPerChange-data:
+    pattern: /$YAMLURL/Crime2YrPerChange
+    handler: FormHandler
+    kwargs:
+      url: sqlite:///$YAMLPATH/save_rawdata.db
+      table: TopCrimes
+      modify: myfirstapp.Crime2YrPerChange(data, handler)
+
+  Crime10YrPerChange-data:
+    pattern: /$YAMLURL/Crime10YrPerChange
+    handler: FormHandler
+    kwargs:
+      url: sqlite:///$YAMLPATH/save_rawdata.db
+      table: TopCrimes
+      modify: myfirstapp.Crime10YrPerChange(data, handler)
+
+  Crime27YrPerChange-data:
+    pattern: /$YAMLURL/Crime27YrPerChange
+    handler: FormHandler
+    kwargs:
+      url: sqlite:///$YAMLPATH/save_rawdata.db
+      table: TopCrimes
+      modify: myfirstapp.Crime27YrPerChange(data, handler)
+
   myfirstapp-login:
     pattern: /$YAMLURL/login/
     # You MUST change the auth before deploying. DBAuth is commonly used.

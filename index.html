@@ -25,7 +25,7 @@
     #datatable {
     overflow:hidden;
     overflow-y: scroll;
-    height: 90vh; 
+    height: 50vh; 
 }
     table,
     th,
@@ -35,10 +35,110 @@
       padding: 10px;
 
     }
-  .mb-3{
-    font-family: "Times New Roman";
+    .blog-header {
+  line-height: 1;
+  border-bottom: 1px solid #e5e5e5;
+}
 
-  }  
+.blog-header-logo {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+  font-size: 2.25rem;
+}
+
+.blog-header-logo:hover {
+  text-decoration: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Playfair Display", Georgia, "Times New Roman", serif;
+}
+
+.display-4 {
+  font-size: 2.5rem;
+}
+@media (min-width: 768px) {
+  .display-4 {
+    font-size: 3rem;
+  }
+}
+
+.nav-scroller {
+  position: relative;
+  z-index: 2;
+  height: 2.75rem;
+  overflow-y: hidden;
+}
+
+.nav-scroller .nav {
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: nowrap;
+  flex-wrap: nowrap;
+  padding-bottom: 1rem;
+  margin-top: -1px;
+  overflow-x: auto;
+  text-align: center;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.nav-scroller .nav-link {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+  font-size: .875rem;
+}
+
+.card-img-right {
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+}
+
+.flex-auto {
+  -ms-flex: 0 0 auto;
+  flex: 0 0 auto;
+}
+
+.h-250 { height: 250px; }
+@media (min-width: 768px) {
+  .h-md-250 { height: 250px; }
+}
+
+/* Pagination */
+.blog-pagination {
+  margin-bottom: 4rem;
+}
+.blog-pagination > .btn {
+  border-radius: 2rem;
+}
+
+/*
+ * Blog posts
+ */
+.blog-post {
+  margin-bottom: 4rem;
+}
+.blog-post-title {
+  margin-bottom: .25rem;
+  font-size: 2.5rem;
+}
+.blog-post-meta {
+  margin-bottom: 1.25rem;
+  color: #999;
+}
+
+/*
+ * Footer
+ */
+.blog-footer {
+  padding: 2.5rem 0;
+  color: #999;
+  text-align: center;
+  background-color: #f9f9f9;
+  border-top: .05rem solid #e5e5e5;
+}
+.blog-footer p:last-child {
+  margin-bottom: 0;
+}
   </style>
 </head>
 
@@ -49,8 +149,11 @@
   
   <!--slider-->
 <!-- Jumbotron -->
-<div class="p-5 text-center bg-light">
-  <h1 class="mb-3">Finding Top Crime Analytics in New York City</h1>
+<div class="jumbotron p-4 p-md-5 text-white rounded bg-dark">
+  <div class="col-md-6 px-0">
+    <h1 class="display-4 font-italic">Finding Top Crime Analytics in New York City</h1>
+    <p class="lead my-3">Multiple lines of text that form the lede, informing new readers quickly and efficiently about what’s most interesting in this post’s contents.</p>
+  </div>
 </div>
 
 
@@ -75,7 +178,8 @@
       <div class="col-md-6">
         <div id="map"></div>
       </div>
-      <div class="col-md-6" id="datatable">
+      <div class="col-md-6">
+        <div id="datatable">
         <script type="text/html" class="datatable">
           <% var _headers = Object.keys(data[0]) %>
           <table class="table">
@@ -97,6 +201,9 @@
             </tbody>
           </table>
         </script>
+        </div>
+        <div id="chartContainer" style="height: 400px; width: 100vh"></div>
+        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
       </div>
     </div><!-- .container-fluid -->
   </div>
@@ -123,12 +230,19 @@
           <p class="mb-auto">This is a wider card with supporting text below as a natural lead-in to additional content.</p>
         </div>
         <div class="col-auto d-none d-lg-block">
-
         </div>
       </div>
     </div>
   </div>
 </div>
+</main><!-- /.container -->
+
+<footer class="blog-footer">
+  <p>Akshay Bapat</p>
+  <p>
+    <a href="#">Back to top</a>
+  </p>
+</footer>
 
   <script src="ui/jquery/dist/jquery.min.js"></script>
   <script src="ui/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
@@ -144,6 +258,39 @@
   <script src="ui/topojson/dist/topojson.min.js"></script>
   -->
   
+  <script>
+    window.onload = function () {
+    
+    var chart = new CanvasJS.Chart("chartContainer", {
+      animationEnabled: true,
+      theme: "light2", // "light1", "light2", "dark1", "dark2"
+      title:{
+        text: "Top Oil Reserves"
+      },
+      axisY: {
+        title: "Reserves(MMbbl)"
+      },
+      data: [{        
+        type: "column",  
+        showInLegend: true, 
+        legendMarkerColor: "grey",
+        legendText: "MMbbl = one million barrels",
+        dataPoints: [      
+          { y: 300878, label: "Venezuela" },
+          { y: 266455,  label: "Saudi" },
+          { y: 169709,  label: "Canada" },
+          { y: 158400,  label: "Iran" },
+          { y: 142503,  label: "Iraq" },
+          { y: 101500, label: "Kuwait" },
+          { y: 97800,  label: "UAE" },
+          { y: 80000,  label: "Russia" }
+        ]
+      }]
+    });
+    chart.render();
+    
+    }
+    </script>
 
   <script>
     var map = L.map('map'); /* The id of the DOM element that will contain the map */
